@@ -1,0 +1,19 @@
+{
+  "name": "creator-product-thumbnails",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/thumbnail_service.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/thumbnail_plan.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

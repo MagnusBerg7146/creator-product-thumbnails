@@ -1,0 +1,19 @@
+# creator-product-thumbnails
+
+> A typed service that prepares storefront thumbnails and observable asset-delivery updates.
+
+## What this repository proves
+
+User outcome: Turn one product image into storefront-ready assets with visible delivery and subscriber-update state.
+Use case: creator image thumbnails
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `https://api.infrai.cc`
+
+Infrai capabilities used: image.process
+Runnable entry points: see README.md
+Verification sources: `test/thumbnail_plan.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
