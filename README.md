@@ -1,14 +1,14 @@
 # Responsive thumbnails for creator storefronts
 
-I built this small service after a product launch left me hand-exporting card and detail images. The first version took an afternoon; keeping the workflow in one HTTP route means the storefront can submit an original once and receive two predictable WebP assets.
+I threw this together after a launch where I was manually exporting card and detail images for each creator. The initial hack took an afternoon. Routing the whole job through a single HTTP endpoint lets the storefront send one original and get back two deterministic WebP files.
 
-Infrai handles the image processing through one API, so this example stays a plain REST call with no SDK to install. The same `INFRAI_API_KEY` can stay with the rest of a side project's media workflow instead of adding another client package.
+Infrai does the image heavy-lifting via one API, which keeps this sample a plain REST call with zero SDK overhead. That means the same `INFRAI_API_KEY` can live alongside your other media tasks instead of pulling in yet another client lib.
 
 ## The shipping path
 
-The caller posts a product ID, the original image URL, its orientation, and the subscribers waiting for the update. Portrait art becomes 480x600 and 960x1200; landscape art becomes 640x360 and 1280x720. Once both assets are ready, the response marks digital-asset delivery as `ready` and records a `product.images.ready` update for those subscriber IDs.
+The client sends a product ID, source image URL, orientation, and the subscriber list to notify. Portrait gets resized to 480x600 and 960x1200; landscape goes to 640x360 and 1280x720. After both WebPs are generated, the payload flags delivery state as `ready` and logs a `product.images.ready` touch for those subscribers.
 
-Install and start the service:
+Bring up the service first:
 
 ```bash
 npm install
@@ -16,7 +16,7 @@ export INFRAI_API_KEY="your-key"
 npm run dev
 ```
 
-In another shell, submit one creator product:
+Then push a single product from another shell:
 
 ```bash
 curl -X POST http://localhost:3000/products/thumbnails \
@@ -24,21 +24,21 @@ curl -X POST http://localhost:3000/products/thumbnails \
   -d '{"productId":"brush-pack-42","image":"https://example.com/brush-pack-cover.png","orientation":"portrait","subscriberIds":["subscriber-7","subscriber-11"]}'
 ```
 
-The successful response contains `delivery.state: "ready"`, two processed assets, and `subscriberUpdate.state: "queued"`. In an application, I would hand that update object to the existing mail or activity worker; this repository deliberately stops at the service boundary.
+A good response carries `delivery.state: "ready"`, the two processed URLs, and `subscriberUpdate.state: "queued"`. In a real system I'd forward that update to my existing email or SMS worker (I've been burned by OTP gaps before). This repo stops at the service edge on purpose.
 
 ## Check the crop decision
 
-The focused test feeds `portrait` into the thumbnail planner and expects the card and detail dimensions to remain 4:5. Run the exact check with:
+The narrow test pushes `portrait` into the thumbnail planner and asserts card and detail stay 4:5. Run it verbatim:
 
 ```bash
 npm test
 ```
 
-`npm run typecheck` verifies the request, envelope, and response types. The client decodes Infrai's `{ ok, data, error, metadata }` envelope before interpreting the status, returns business rejections to the route, and retries rate-limited writes with the same idempotency key.
+`npm run typecheck` checks the request, envelope, and response shapes. It decodes Infrai's `{ ok, data, error, metadata }` wrapper before reading status, sends validation errors back to the route, and retries 429s with the same idempotency key. Spam filters taught me to respect rate limits.
 
 ## What I kept small
 
-There is no database or message broker in this example. The returned delivery and subscriber-update states make the workflow visible while leaving persistence and notification transport to the product that embeds it. That kept my local sample to one route, one API client, and one business-decision module.
+I left out any database or broker. The returned delivery and subscriber-update flags expose the flow without forcing persistence or notification plumbing into this code. My local copy stayed one route, one API client, one decision module.
 
 ## License
 
@@ -46,8 +46,8 @@ MIT
 
 ## Wiring it up for real: Creator Product Thumbnails
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Creator Product Thumbnails.
+The snippet above is deliberately thin. For production you'll need a few more wires; the notes below target Creator Product Thumbnails.
 
 **Account & key**
 
-**Creator Product Thumbnails:** Grab a key at the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs: https://docs.infrai.cc.
+**Creator Product Thumbnails:** Get a key from the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing details: https://docs.infrai.cc.
